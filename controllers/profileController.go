@@ -63,7 +63,7 @@ func GetAvatars(w http.ResponseWriter, r *http.Request) {
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    201,
-		Flag:    false,
+		Type:    false,
 	}
 	for i := range allImages {
 		allImages[i].Path = fmt.Sprint(path, "/assets/", allImages[i].Name, ".svg")
@@ -89,7 +89,7 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    201,
-		Flag:    false,
+		Type:    false,
 	}
 
 	json.Unmarshal(reqBody, &newProfile)
@@ -117,23 +117,23 @@ func ListProfiles(w http.ResponseWriter, r *http.Request) {
 func GetProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	profileID, err := strconv.Atoi(vars["idProfile"])
-	var profileInfo = models.Profile{}
-	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
 		err200 := models.Error{
 			Message: "ID Invalido",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err200)
 	}
+	var profileInfo = models.Profile{}
+	w.Header().Set("Content-Type", "application/json")
 	// reqBody, err := ioutil.ReadAll(r.Body)
 	// if err != nil {
 	// 	err200 := models.Error{
 	// 		Message: "Ingresar data valida para actualizar",
 	// 		Code:    400,
-	// 		Flag:    true,
+	// 		Type:    true,
 	// 	}
 	// 	json.NewEncoder(w).Encode(err200)
 	// }
@@ -158,7 +158,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 		errObj := models.Error{
 			Message: "Id no encontrado",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		w.WriteHeader(http.StatusNotFound)
 		json.NewEncoder(w).Encode(errObj)
@@ -174,7 +174,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		err200 := models.Error{
 			Message: "ID Invalido",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err200)
@@ -185,7 +185,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		err200 := models.Error{
 			Message: "Ingresar data valida para actualizar",
 			Code:    400,
-			Flag:    true,
+			Type:    true,
 		}
 		json.NewEncoder(w).Encode(err200)
 	}
@@ -220,7 +220,7 @@ func DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	err200 := models.Error{
 		Message: "Sin Error",
 		Code:    http.StatusOK,
-		Flag:    false,
+		Type:    false,
 	}
 	if err != nil {
 		fmt.Fprintf(w, "Invalid User ID")

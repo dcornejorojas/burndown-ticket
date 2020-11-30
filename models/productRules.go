@@ -12,10 +12,10 @@ import (
 @Description: Legend that would be display with the description of the Rule
 */
 type Rule struct {
-	Format      string `json:"format"`
-	Store       string `json:"store"`
+	Format      int64 `json:"format"`
+	Store       int64 `json:"store"`
 	ProductID   string `json:"productId"`
-	Type        string `json:"type"`
+	Type        int64 `json:"type"`
 	Description string `json:"description"`
 	Time        time.Time
 }
