@@ -1,7 +1,7 @@
 package app
 
 import (
-	"burndown-ticket/routers"
+	"ticket/routers"
 	"database/sql"
 	"fmt"
 	"log"

@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"burndown-ticket/controllers"
+	"ticket/controllers"
 	"github.com/gorilla/mux"
 )
 

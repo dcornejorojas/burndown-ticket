@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"burndown-ticket/models"
-	"burndown-ticket/utils"
+	"ticket/models"
+	"ticket/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"

@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"burndown-ticket/models"
+	"ticket/models"
 	"encoding/json"
 	"net/http"
 )
