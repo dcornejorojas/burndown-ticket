@@ -3,7 +3,6 @@ package utils
 import (
 	"burndown-ticket/models"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -23,7 +22,6 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 
 func ResponseJSON(w http.ResponseWriter, code int, message string, payload interface{}, err models.Error) {
 	// response, _ := json.Marshal(payload)
-	fmt.Println("RESPONSEJSON")
 	response := models.Response{
 		Code:    code,
 		Message: message,

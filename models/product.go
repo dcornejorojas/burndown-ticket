@@ -6,10 +6,13 @@ import (
 
 //Product that would be scanned
 type Product struct {
-	BarCode  string `json:"barcode"`
+	BarCode  string `json:"code"`
 	Name     string `json:"name"`
 	Quantity string `json:"quantity"`
-	Price    string `json:"price"`
-	Rules    []Rule
-	Time     time.Time
+	Value    string `json:"value"`
+	Rules    []Rule `json:"rule"`
+	CheckedInfo map[string]interface{} `json:"checkedInfo"` 
+	Time     time.Time 
 }
+
+type AllProducts []Product

@@ -2,7 +2,6 @@ package routers
 
 import (
 	"burndown-ticket/controllers"
-
 	"github.com/gorilla/mux"
 )
 
@@ -11,6 +10,6 @@ import (
 */
 func SetTicketRoutes(router *mux.Router) *mux.Router {
 	router.HandleFunc("/ticket/{id}", controllers.ScanTicket).Methods("GET")
-	router.HandleFunc("/ticket", controllers.HelloWorld).Methods("POST")
+	router.HandleFunc("/ticket", controllers.BurnTicket).Methods("POST")
 	return router
 }
