@@ -1,28 +1,23 @@
 package main
 
 import (
-	"ticket/app"
-	"fmt"
-	"os"
-
-	"github.com/joho/godotenv"
+	"ticket/api"
 )
 
 func main() {
-	e := godotenv.Load()
-	if e != nil {
-		fmt.Print(e)
-	}
-	port := os.Getenv("PORT")
-	// if port == "" {
-	// 	port = ":8000" //localhost
+	api.Run()
+	// e := godotenv.Load()
+	// if e != nil {
+	// 	fmt.Print(e)
 	// }
-	a := app.App{}
-	a.Initialize(
-		os.Getenv("APP_DB_USERNAME"),
-		os.Getenv("APP_DB_PASSWORD"),
-		os.Getenv("APP_DB_NAME"))
-
-	a.Run(port)
+	// port := os.Getenv("PORT")
+	// // if port == "" {
+	// // 	port = ":8000" //localhost
+	// // }
+	// a := app.App{}
+	// a.Initialize(
+	// 	os.Getenv("APP_DB_USERNAME"),
+	// 	os.Getenv("APP_DB_PASSWORD"),
+	// 	os.Getenv("APP_DB_NAME"))
 
 }

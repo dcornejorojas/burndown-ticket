@@ -1,21 +1,25 @@
-FROM golang:1.15 AS GO_BUILD
+FROM golang:latest as builder
 
-ADD . /go/src/app
-WORKDIR /go/src/app
+ENV SERVICE_NAME=ticket
+ENV APP /src/${SERVICE_NAME}/
+ENV WORKDIR ${GOPATH}${APP}
 
-RUN go get github.com/gorilla/mux
-RUN go get github.com/joho/godotenv
-RUN go get github.com/lib/pq
-RUN go get app
-RUN go build
-RUN ls
+WORKDIR $WORKDIR
+ADD . $WORKDIR
 
-FROM alpine:3.10
-RUN apk --no-cache add ca-certificates
-WORKDIR /usr/bin
-COPY --from=GO_BUILD /go/src/app/burndown-ticket /go/bin
-#EXPOSE 3000
-#ENTRYPOINT /go/bin/test --port 3000
+RUN go get -d -v ./...
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o $SERVICE_NAME
 
-EXPOSE 3001
-CMD ./go/bin/burndown-ticket
+FROM alpine
+
+ENV SERVICE_NAME=ticket
+ENV APP /src/${SERVICE_NAME}/
+ENV GOPATH /go
+ENV WORKDIR ${GOPATH}${APP}
+
+# from=builder GOPATH/src/ticket src/ticket
+COPY --from=builder ${WORKDIR}${SERVICE_NAME} $WORKDIR
+COPY --from=builder ${WORKDIR}.env $WORKDIR
+
+WORKDIR $WORKDIR
+CMD ./${SERVICE_NAME}

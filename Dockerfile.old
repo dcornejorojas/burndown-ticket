@@ -1,0 +1,31 @@
+FROM golang:alpine AS BUILDER
+
+ENV GO111MODULE=on
+RUN apk update && apk add --no-cache git
+WORKDIR /app
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+RUN go get ticket
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-w -s" -o /bin/ticket
+
+#FROM alpine:latest  
+#RUN apk --no-cache add ca-certificates
+#WORKDIR /app
+#COPY --from=BUILDER /app/ticket .
+#ENTRYPOINT [“ticket”]
+
+FROM scratch
+EXPOSE 3001
+COPY --from=BUILDER /app/env .env
+COPY --from=BUILDER /bin/ticket /bin/ticket
+ENTRYPOINT ["/bin/ticket"]
+#FROM alpine:latest
+##RUN apk --no-cache add ca-certificates
+#WORKDIR /go/src/bin
+#COPY --from=BUILDER /go/src/ticket/ticket .
+#
+#ENTRYPOINT ./ticket
+#EXPOSE 3001
+#CMD /bin/main --port 3001
