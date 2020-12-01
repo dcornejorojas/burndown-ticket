@@ -1,10 +1,10 @@
 package main
 
 import (
-	"burndown-ticket/routers"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"ticket/api/routers"
 
 	"github.com/gorilla/mux"
 	"github.com/stretchr/testify/assert"
