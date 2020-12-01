@@ -1,7 +1,7 @@
 package main
 
 import (
-	"burndown-ticket/app"
+	"ticket/app"
 	"fmt"
 	"os"
 
@@ -14,9 +14,9 @@ func main() {
 		fmt.Print(e)
 	}
 	port := os.Getenv("PORT")
-	if port == "" {
-		port = ":8000" //localhost
-	}
+	// if port == "" {
+	// 	port = ":8000" //localhost
+	// }
 	a := app.App{}
 	a.Initialize(
 		os.Getenv("APP_DB_USERNAME"),

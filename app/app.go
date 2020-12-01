@@ -1,7 +1,7 @@
 package app
 
 import (
-	"burndown-ticket/routers"
+	"ticket/routers"
 	"database/sql"
 	"fmt"
 	"log"
@@ -31,7 +31,7 @@ func (a *App) Initialize(user, password, dbname string) {
 
 func (a *App) Run(addr string) {
 	fmt.Println(addr)
-	err := http.ListenAndServe(addr, a.Router) //Launch the app, visit localhost:8000/api
+	err := http.ListenAndServe(":"+ addr, a.Router) //Launch the app, visit localhost:8000/api
 	if err != nil {
 		fmt.Print(err)
 	}

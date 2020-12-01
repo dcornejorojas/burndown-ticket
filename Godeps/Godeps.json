@@ -1,0 +1,10 @@
+{
+    "ImportPath": "ticket",
+    "GoVersion": "go1.15.2",
+    "GodepVersion": "v80",
+    "Packages": [
+        "./..."
+    ],
+    "Deps": []
+
+}
