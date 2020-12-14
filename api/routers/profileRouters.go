@@ -11,11 +11,11 @@ import (
 func SetProfileRoutes(router *mux.Router) *mux.Router {
 
 	router.HandleFunc("/profile", middlewares.SetAuthMiddleware(controllers.CreateProfile)).Methods("POST")
-	router.HandleFunc("/profile/list", controllers.ListProfiles).Methods("POST")
-	router.HandleFunc("/profile/image", controllers.GetAvatars).Methods("GET")
-	router.HandleFunc("/profile/{idProfile}", controllers.UpdateProfile).Methods("PUT")
-	router.HandleFunc("/profile/{idProfile}", controllers.GetProfile).Methods("GET")
-	router.HandleFunc("/profile/{idProfile}", controllers.DeleteProfile).Methods("DELETE")
+	router.HandleFunc("/profile/list", middlewares.SetAuthMiddleware(controllers.ListProfiles)).Methods("POST")
+	router.HandleFunc("/profile/image", middlewares.SetAuthMiddleware(controllers.GetAvatars)).Methods("GET")
+	router.HandleFunc("/profile/{idProfile}", middlewares.SetAuthMiddleware(controllers.UpdateProfile)).Methods("PUT")
+	router.HandleFunc("/profile/{idProfile}", middlewares.SetAuthMiddleware(controllers.GetProfile)).Methods("GET")
+	router.HandleFunc("/profile/{idProfile}", middlewares.SetAuthMiddleware(controllers.DeleteProfile)).Methods("DELETE")
 
 	return router
 }
