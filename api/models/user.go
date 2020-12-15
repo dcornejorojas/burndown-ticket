@@ -13,7 +13,7 @@ import (
 //User that would login the app
 type User struct {
 	IDUser    uint32    `gorm:"primary_key;auto_increment" json:"id"`
-	Dni       string    `gorm:"size:100;not null" json:"idUser"`
+	Dni       string    `gorm:"size:100;not null" json:"dni"`
 	Password  string    `gorm:"size:100;not null" json:"password"`
 	Name      string    `gorm:"size:100;not null" json:"name"`
 	User      string    `gorm:"size:100;not null" json:"user"`
@@ -60,34 +60,34 @@ func (u *User) Validate(action string) error {
 	switch strings.ToLower(action) {
 	case "update":
 		if u.Name == "" {
-			return errors.New("Required Name")
+			return errors.New(`campo 'Name' requerido`)
 		}
 		if u.Password == "" {
-			return errors.New("Required Password")
+			return errors.New(`campo 'Password' requerido`)
 		}
 		if u.LastName == "" {
-			return errors.New("Required LastName")
+			return errors.New("LastName")
 		}
 
 		return nil
 	case "login":
 		if u.Password == "" {
-			return errors.New("Required Password")
+			return errors.New(`campo 'Password' requerido`)
 		}
-		if u.Dni == "" {
-			return errors.New("Required Dni")
+		if u.User == "" {
+			return errors.New(`campo 'User' requerido`)
 		}
 		return nil
 
 	default:
 		if u.Name == "" {
-			return errors.New("Required Name")
+			return errors.New(`campo 'Name' requerido`)
 		}
 		if u.Password == "" {
-			return errors.New("Required Password")
+			return errors.New(`campo 'Password' requerido`)
 		}
 		if u.LastName == "" {
-			return errors.New("Required LastName")
+			return errors.New(`campo 'LastName' requerido`)
 		}
 		return nil
 	}

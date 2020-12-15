@@ -21,7 +21,7 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func ResponseJSON(w http.ResponseWriter, code int, message string, payload interface{}, obj models.Error) {
+func ResponseJSON(w http.ResponseWriter, code int, message string, payload interface{}, obj interface{}) {
 	// response, _ := json.Marshal(payload)
 	response := models.Response{
 		Code:    code,
@@ -35,4 +35,16 @@ func ResponseJSON(w http.ResponseWriter, code int, message string, payload inter
 	if err != nil {
 		fmt.Fprintf(w, "%s", err.Error())
 	}
+}
+
+func ERROR(w http.ResponseWriter, statusCode int, obj error) {
+	var data interface{}
+	err := models.Error{}
+	if obj != nil {
+		err.HasError(true, statusCode, obj.Error())
+		ResponseJSON(w, statusCode, err.Message, data, err)
+		return
+	}
+	err.NoError()
+	ResponseJSON(w, statusCode, err.Message, data, err)
 }

@@ -54,7 +54,7 @@ var allImages = models.Images{
 	},
 }
 
-func GetAvatars(w http.ResponseWriter, r *http.Request) {
+func (server *Server) GetAvatars(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GetAvatars")
 	path, err := os.Getwd()
 	if err != nil {
@@ -80,7 +80,7 @@ func GetAvatars(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response200)
 }
 
-func CreateProfile(w http.ResponseWriter, r *http.Request) {
+func (server *Server) CreateProfile(w http.ResponseWriter, r *http.Request) {
 	var newProfile models.Profile
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -108,13 +108,13 @@ func CreateProfile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func ListProfiles(w http.ResponseWriter, r *http.Request) {
+func (server *Server) ListProfiles(w http.ResponseWriter, r *http.Request) {
 	err := models.Error{}
 	err.NoError()
 	utils.ResponseJSON(w, http.StatusOK, fmt.Sprint(len(allProfiles), " perfiles encontrados"), allProfiles, err)
 }
 
-func GetProfile(w http.ResponseWriter, r *http.Request) {
+func (server *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	profileID, err := strconv.Atoi(vars["idProfile"])
 	if err != nil {
@@ -165,7 +165,7 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func UpdateProfile(w http.ResponseWriter, r *http.Request) {
+func (server *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	profileID, err := strconv.Atoi(vars["idProfile"])
 	var updatedProfile models.Profile
@@ -212,7 +212,7 @@ func UpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func DeleteProfile(w http.ResponseWriter, r *http.Request) {
+func (server *Server) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var deleted = false
 	var response200 models.Response

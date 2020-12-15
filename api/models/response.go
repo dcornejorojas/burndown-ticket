@@ -4,7 +4,7 @@ type Response struct {
 	Code    int         `json:"code"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
-	Error   Error       `json:"error"`
+	Error   interface{} `json:"error"`
 }
 
 type ResponseProfileList struct {

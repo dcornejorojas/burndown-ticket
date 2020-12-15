@@ -39,7 +39,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
-		utils.ResponseJSON(w, http.StatusUnprocessableEntity, "Error al obtener Body", "", errObj)
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		fmt.Fprintf(w, "Insert a Valid Task Data")
 		return
 	}
@@ -47,7 +47,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(reqBody, &user)
 	if err != nil {
 		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
-		utils.ResponseJSON(w, http.StatusUnprocessableEntity, "Error al obtener Body", "", errObj)
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		fmt.Fprintf(w, "Failed to UnMarshal")
 		return
 	}
@@ -56,7 +56,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	err = user.Validate("")
 	if err != nil {
 		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
-		utils.ResponseJSON(w, http.StatusUnprocessableEntity, "Error al obtener Body", "", errObj)
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		fmt.Fprintf(w, "Insert a Valid Task Data")
 		return
 	}

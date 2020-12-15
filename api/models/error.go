@@ -5,9 +5,9 @@ import (
 )
 
 type Error struct {
-	Type    bool    `json:"type"`
-	Code    float64 `json:"code"`
-	Message string  `json:"message"`
+	Type    bool   `json:"type"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 func (err *Error) NoError() {
@@ -16,7 +16,7 @@ func (err *Error) NoError() {
 	err.Message = "Without Errors"
 }
 
-func (err *Error) HasError(flag bool, code float64, message string){
+func (err *Error) HasError(flag bool, code int, message string) {
 	err.Code = code
 	err.Type = flag
 	err.Message = message

@@ -78,7 +78,7 @@ var tickets = []byte(`[
 /*ScanTicket handle the scan of a ticket.
 - {id}: id of the ticket, it will be able with EAN13-CODE128-DUN14 format
 */
-func ScanTicket(w http.ResponseWriter, req *http.Request) {
+func (server *Server) ScanTicket(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	var ticketInfo models.Ticket
 
@@ -108,7 +108,7 @@ func ScanTicket(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func BurnTicket(w http.ResponseWriter, req *http.Request) {
+func (server *Server) BurnTicket(w http.ResponseWriter, req *http.Request) {
 	errObj := models.Error{}
 	errObj.NoError()
 	var burnedTicket models.CheckedTicket
