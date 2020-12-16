@@ -53,11 +53,11 @@ func ExtractToken(r *http.Request) string {
 }
 
 func Pretty(data interface{}) {
-	b, err := json.MarshalIndent(data, "", " ")
+	_, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	fmt.Println(string(b))
+	//fmt.Println(string(b))
 }

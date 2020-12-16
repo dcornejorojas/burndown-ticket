@@ -42,7 +42,7 @@ func ERROR(w http.ResponseWriter, statusCode int, obj error) {
 	err := models.Error{}
 	if obj != nil {
 		err.HasError(true, statusCode, obj.Error())
-		ResponseJSON(w, statusCode, err.Message, data, err)
+		ResponseJSON(w, statusCode, err.Message, []string{}, err)
 		return
 	}
 	err.NoError()

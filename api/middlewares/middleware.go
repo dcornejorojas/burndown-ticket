@@ -13,7 +13,7 @@ func SetAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		if err != nil {
 			errObj := models.Error{}
 			errObj.HasError(true, http.StatusUnauthorized, "Unauthorized")
-			utils.ResponseJSON(w, http.StatusUnauthorized, "Token invalido", "", errObj)
+			utils.ResponseJSON(w, http.StatusUnauthorized, "Token invalido", []string{}, errObj)
 			return
 		}
 		next(w, r)
