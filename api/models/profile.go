@@ -6,19 +6,21 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/jinzhu/gorm"
 )
 
 //Profile that would use the app
 type Profile struct {
-	IDProfile int       `gorm:"size:100;not null" json:"idProfile"`
+	ID			uint32 `gorm:"primary key"`
+	IDprofile int       `gorm:"size:100;not null" json:"idprofile"`
 	Name      string    `gorm:"size:100;not null" json:"name"`
-	LastName  string    `gorm:"size:100;not null" json:"lastName"`
+	Lastname  string    `gorm:"size:100;not null" json:"lastName"`
 	Avatar    string    `gorm:"size:100;not null" json:"avatar"`
 	Type      string    `gorm:"size:100;not null" json:"type"`
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
-	Time      time.Time
 }
 
 //AllProfile list of profiles
@@ -26,11 +28,13 @@ type AllProfile []Profile
 
 //Prepare used to init a profile object
 func (p *Profile) Prepare() {
-	p.IDProfile = 0
+	p.IDprofile = 0
 	p.Name = html.EscapeString(strings.TrimSpace(p.Name))
-	p.LastName = html.EscapeString(strings.TrimSpace(p.LastName))
+	p.Lastname = html.EscapeString(strings.TrimSpace(p.Lastname))
 	p.Avatar = html.EscapeString(strings.TrimSpace(p.Avatar))
 	p.Type = html.EscapeString(strings.TrimSpace(p.Type))
+	p.CreatedAt = time.Now()
+	p.UpdatedAt = time.Now()
 }
 
 func (p *Profile) Validate(action string) error {
@@ -39,8 +43,8 @@ func (p *Profile) Validate(action string) error {
 		if p.Name == "" {
 			return errors.New(`campo 'Name' requerido`)
 		}
-		if p.LastName == "" {
-			return errors.New(`campo 'LastName' requerido`)
+		if p.Lastname == "" {
+			return errors.New(`campo 'Lastname' requerido`)
 		}
 		if p.Type == "" {
 			return errors.New(`campo 'Type' requerido`)
@@ -51,8 +55,8 @@ func (p *Profile) Validate(action string) error {
 		if p.Name == "" {
 			return errors.New(`campo 'Name' requerido`)
 		}
-		if p.LastName == "" {
-			return errors.New(`campo 'LastName' requerido`)
+		if p.Lastname == "" {
+			return errors.New(`campo 'Lastname' requerido`)
 		}
 		if p.Type == "" {
 			return errors.New(`campo 'Type' requerido`)
@@ -61,12 +65,24 @@ func (p *Profile) Validate(action string) error {
 	}
 }
 
+//SaveProfile Save a profile in the DB
+func (p *Profile) SaveProfile(db *gorm.DB) (*Profile, error) {
+	fmt.Println(`Save profile`)
+	fmt.Println(p)
+	var err error
+	err = db.Debug().Table(`omnicontrol.profiles`).Create(&p).Error
+	if err != nil {
+		return &Profile{}, err
+	}
+	return p, nil
+}
+
 //FindAllProfiles retrieves all profiles in the BD
 func (p *Profile) FindAllProfiles(db *gorm.DB) (*[]Profile, error) {
 	var err error
 	profiles := []Profile{}
 	if os.Getenv("DB_ENABLE") == "true" {
-		err = db.Debug().Model(&Profile{}).Limit(100).Find(&profiles).Error
+		err = db.Debug().Table(`omnicontrol.profiles`).Limit(100).Find(&profiles).Error
 		if err != nil {
 			return &[]Profile{}, err
 		}
@@ -95,7 +111,7 @@ func (p *Profile) UpdateProfile(db *gorm.DB, uid uint32) (*Profile, error) {
 		db = db.Debug().Model(&Profile{}).Where("id = ?", uid).Take(&Profile{}).UpdateColumns(
 			map[string]interface{}{
 				"name":       p.Name,
-				"lastname":   p.LastName,
+				"lastname":   p.Lastname,
 				"avatar":     p.Avatar,
 				"type":       p.Type,
 				"updated_at": time.Now(),

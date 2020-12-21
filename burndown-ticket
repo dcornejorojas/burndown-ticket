@@ -1,0 +1,21 @@
+#! /bin/sh
+# /etc/init.d/burndown-ticket
+#
+USER="root"
+# Carry out specific functions when asked to by the system
+case "$1" in
+  start)
+    cd "/opt/burndown/burndown-ticket"
+    echo "Start Golang script"
+    /bin/su -m -l $USER -c "nohup ./ticket > /dev/null 2>&1 & echo $! > /opt/burndown/burndown-ticket/ticket.pid"
+    ;;
+  stop)
+    echo "Stop Golang script"
+    kill -9 `cat /opt/burndown/burndown-ticket/ticket.pid`
+    ;;
+  *)
+    echo "Usage: /etc/init.d/burndown-ticket {start|stop}"
+    exit 1
+    ;;
+esac
+exit 0

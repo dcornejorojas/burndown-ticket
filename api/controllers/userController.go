@@ -8,6 +8,7 @@ import (
 	"ticket/api/models"
 	"ticket/api/utils"
 	u "ticket/api/utils"
+	log "github.com/jeanphorn/log4go"
 )
 
 var allUsers = models.AllUsers{
@@ -31,14 +32,15 @@ var HelloWorld = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-func CreateUser(w http.ResponseWriter, r *http.Request) {
+func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
+	log.LOGGER("Routes").Info("POST - /user/ - Trying to create new user")
 	var user models.User
 	var errObj = models.Error{}
 	errObj.NoError()
 
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process the body")
 		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		fmt.Fprintf(w, "Insert a Valid Task Data")
 		return
@@ -46,7 +48,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(reqBody, &user)
 	if err != nil {
-		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to get the new User")
 		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		fmt.Fprintf(w, "Failed to UnMarshal")
 		return
@@ -61,9 +63,17 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	allUsers = append(allUsers, user)
+	fmt.Println(user)
+	newUser, err := user.SaveUser(server.DB)
+	if err != nil {
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to create the user")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		fmt.Fprintf(w, "Insert a Valid Task Data")
+		return
+	}
+	//allUsers = append(allUsers, user)
 
-	utils.ResponseJSON(w, http.StatusCreated, "Usuario agregado exitosamente", allUsers, errObj)
+	utils.ResponseJSON(w, http.StatusCreated, "Usuario agregado exitosamente", newUser, errObj)
 
 }
 

@@ -104,9 +104,15 @@ func (server *Server) CreateProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//INSERT PROFILE IN DB
-	allProfiles = append(allProfiles, profile)
+	newProfile, err := profile.SaveProfile(server.DB)
+	if err != nil {
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to create the user")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		fmt.Fprintf(w, "Insert a Valid Task Data")
+		return
+	}
 
-	utils.ResponseJSON(w, http.StatusCreated, "Perfil agregado exitosamente", allProfiles, errObj)
+	utils.ResponseJSON(w, http.StatusCreated, "Perfil agregado exitosamente", newProfile, errObj)
 
 }
 
@@ -206,7 +212,7 @@ func (server *Server) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i, profile := range allProfiles {
-		if profile.IDProfile == profileID {
+		if profile.IDprofile == profileID {
 			deleted = true
 			allProfiles = append(allProfiles[:i], allProfiles[i+1:]...)
 		}

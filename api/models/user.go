@@ -4,6 +4,7 @@ import (
 	"errors"
 	"html"
 	"strings"
+	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -12,17 +13,17 @@ import (
 
 //User that would login the app
 type User struct {
-	IDUser    uint32    `gorm:"primary_key;auto_increment" json:"id"`
+	IDUser    uint32    `gorm:"primary_key;auto_increment" json:"iduser"`
 	Dni       string    `gorm:"size:100;not null" json:"dni"`
 	Password  string    `gorm:"size:100;not null" json:"password"`
 	Name      string    `gorm:"size:100;not null" json:"name"`
 	User      string    `gorm:"size:100;not null" json:"user"`
-	LastName  string    `gorm:"size:100;not null" json:"lastName"`
+	LastName  string    `gorm:"size:100;not null" json:"lastname"`
 	Avatar    string    `gorm:"size:200;not null" json:"avatar"`
 	Rol       string    `gorm:"size:100;not null" json:"rol"`
 	Token     string    `gorm:"size:200;not null" json:"token"`
-	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updatedAt"`
+	CreatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
 
 //AllUsers is a list of users
@@ -69,7 +70,7 @@ func (u *User) Validate(action string) error {
 			return errors.New(`campo 'Password' requerido`)
 		}
 		if u.LastName == "" {
-			return errors.New("LastName")
+			return errors.New(`campo 'LastName' requerido`)
 		}
 
 		return nil
@@ -98,8 +99,10 @@ func (u *User) Validate(action string) error {
 
 //SaveUser Save a user in the DB
 func (u *User) SaveUser(db *gorm.DB) (*User, error) {
+	fmt.Println(`Save user`)
+	fmt.Println(u)
 	var err error
-	err = db.Debug().Create(&u).Error
+	err = db.Debug().Table(`omnicontrol.users`).Create(&u).Error
 	if err != nil {
 		return &User{}, err
 	}
