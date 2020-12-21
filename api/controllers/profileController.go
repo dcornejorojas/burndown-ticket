@@ -55,30 +55,24 @@ var allImages = models.Images{
 	},
 }
 
+//GetAvatars return the list of the avatars in the DB
 func (server *Server) GetAvatars(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("GetAvatars")
+	var errObj = models.Error{}
 	path, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
-	}
-	err200 := models.Error{
-		Message: "Sin Error",
-		Code:    201,
-		Type:    false,
+		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to process Entity")
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
 	}
 	for i := range allImages {
 		allImages[i].Path = fmt.Sprint(path, "/assets/", allImages[i].Name, ".svg")
 		fmt.Println(allImages[i].Path)
 	}
-	response200 := models.ResponseImage{
-		Code:    201,
-		Message: "Lista de Imagenes",
-		Data:    allImages,
-		Error:   err200,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response200)
+
+	errObj.NoError()
+	utils.ResponseJSON(w, http.StatusCreated, "Perfil agregado exitosamente", allImages, errObj)
 }
 
 //CreateProfile creates a new profile in the environment
@@ -156,104 +150,46 @@ func (server *Server) GetProfile(w http.ResponseWriter, r *http.Request) {
 	utils.ResponseJSON(w, http.StatusOK, `Usuario encontrado`, profGotten, err2)
 }
 
-func (server *Server) GetProfile2(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	profileID, err := strconv.Atoi(vars["idProfile"])
-	if err != nil {
-		err200 := models.Error{
-			Message: "ID Invalido",
-			Code:    400,
-			Type:    true,
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err200)
-	}
-	var profileInfo = models.Profile{}
-	w.Header().Set("Content-Type", "application/json")
-	// reqBody, err := ioutil.ReadAll(r.Body)
-	// if err != nil {
-	// 	err200 := models.Error{
-	// 		Message: "Ingresar data valida para actualizar",
-	// 		Code:    400,
-	// 		Type:    true,
-	// 	}
-	// 	json.NewEncoder(w).Encode(err200)
-	// }
-	for _, profile := range allProfiles {
-		if profile.IDProfile == profileID {
-			profileInfo = profile
-		}
-	}
-
-	if profileInfo != (models.Profile{}) {
-		var newProfiles = models.AllProfile{}
-		newProfiles = append(newProfiles, profileInfo)
-
-		response := models.Response{
-			Code:    http.StatusOK,
-			Message: fmt.Sprintf("Información del usuario con ID: %v", profileID),
-			Data:    newProfiles,
-		}
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
-	} else {
-		errObj := models.Error{
-			Message: "Id no encontrado",
-			Code:    400,
-			Type:    true,
-		}
-		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(errObj)
-	}
-}
-
+//UpdateProfile can update the info of a given idProfile
 func (server *Server) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	profileID, err := strconv.Atoi(vars["idProfile"])
-	var updatedProfile models.Profile
-	w.Header().Set("Content-Type", "application/json")
+	uid, err := strconv.ParseUint(vars["idProfile"], 10, 32)
 	if err != nil {
-		err200 := models.Error{
-			Message: "ID Invalido",
-			Code:    400,
-			Type:    true,
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(err200)
+		utils.ERROR(w, http.StatusBadRequest, err)
+		return
 	}
-
-	reqBody, err := ioutil.ReadAll(r.Body)
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		err200 := models.Error{
-			Message: "Ingresar data valida para actualizar",
-			Code:    400,
-			Type:    true,
-		}
-		json.NewEncoder(w).Encode(err200)
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
 	}
-	json.Unmarshal(reqBody, &updatedProfile)
-
-	for i, t := range allProfiles {
-		if t.IDProfile == profileID {
-			allProfiles = append(allProfiles[:i], allProfiles[i+1:]...)
-
-			updatedProfile.IDProfile = t.IDProfile
-			allProfiles = append(allProfiles, updatedProfile)
-
-			// w.Header().Set("Content-Type", "application/json")
-			// json.NewEncoder(w).Encode(updatedTask)
-			response200 := models.Response{
-				Code:    201,
-				Message: fmt.Sprintf("El usuario con ID %v ha sido actualizado correctamente", profileID),
-				Data:    allProfiles,
-			}
-			w.WriteHeader(http.StatusCreated)
-			json.NewEncoder(w).Encode(response200)
-		}
+	profile := models.Profile{}
+	err = json.Unmarshal(body, &profile)
+	if err != nil {
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
 	}
+	profile.Prepare()
+	err = profile.Validate("update")
+	if err != nil {
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	//VALIDATE PROF DATA
+	updatedProf, err := profile.UpdateProfile(server.DB, uint32(uid))
+	if err != nil {
+		utils.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	err2 := models.Error{}
+	err2.NoError()
+	utils.ResponseJSON(w, http.StatusOK, `Perfil actualizado`, updatedProf, err2)
 
 }
 
+//DeleteProfile delete a profile by the given IdProfile
 func (server *Server) DeleteProfile(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var deleted = false

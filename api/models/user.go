@@ -33,10 +33,12 @@ func Hash(password string) ([]byte, error) {
 	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
 
+//VerifyPassword check if the password is the same as the hashed one
 func VerifyPassword(hashedPassword, password string) error {
 	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
 }
 
+//BeforeSave is used to hash the password of the user
 func (u *User) BeforeSave() error {
 	hashedPassword, err := Hash(u.Password)
 	if err != nil {
@@ -56,6 +58,7 @@ func (u *User) Prepare() {
 	u.UpdatedAt = time.Now()
 }
 
+//Validate is used to check if the user info insn´t empty
 func (u *User) Validate(action string) error {
 	switch strings.ToLower(action) {
 	case "update":
@@ -93,6 +96,7 @@ func (u *User) Validate(action string) error {
 	}
 }
 
+//SaveUser Save a user in the DB
 func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 	var err error
 	err = db.Debug().Create(&u).Error
@@ -102,6 +106,7 @@ func (u *User) SaveUser(db *gorm.DB) (*User, error) {
 	return u, nil
 }
 
+//FindAllUsers Return all users from the DB
 func (u *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 	var err error
 	users := []User{}
@@ -112,6 +117,7 @@ func (u *User) FindAllUsers(db *gorm.DB) (*[]User, error) {
 	return &users, err
 }
 
+//FindUserByID return a user by the given userID
 func (u *User) FindUserByID(db *gorm.DB, uid uint32) (*User, error) {
 	var err error
 	err = db.Debug().Model(User{}).Where("id = ?", uid).Take(&u).Error

@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"ticket/api/models"
 	"ticket/api/utils"
 
@@ -76,12 +78,39 @@ var tickets = []byte(`[
 ]`)
 
 /*ScanTicket handle the scan of a ticket.
-- {id}: id of the ticket, it will be able with EAN13-CODE128-DUN14 format
+- {folio}: id of the ticket, it will be able with EAN13-CODE128-DUN14 format
 */
 func (server *Server) ScanTicket(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	var ticketInfo models.Ticket
 
+	store := utils.GetStore()
+	service := os.Getenv("GET_TICKET")
+	vars := mux.Vars(req)
+	folio := vars[`folio`]
+	if len(folio) > 12 {
+		err := errors.New("Folio demasiado largo")
+		utils.ERROR(w, http.StatusBadRequest, err)
+		return
+	}
+	url := fmt.Sprintf("%s%s%s%s%s", service, "/", store, "/", folio)
+	fmt.Println(url)
+
+	var ticketInfo models.Ticket
+	client := &http.Client{}
+	request, _ := http.NewRequest("GET", "http://golang.org", nil)
+	request.Header.Set("User-Agent", "Mozilla/5.0")
+	request.Header.Set("Content-Type", "application/json")
+	res, err := client.Do(request)
+	if err != nil {
+		utils.ERROR(w, http.StatusNotFound, err)
+		return
+	}
+	fmt.Println(res.StatusCode)
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		utils.ERROR(w, http.StatusNotFound, err)
+		return
+	}
+	fsb := string(body)
 	/* Logic to be deprecated */
 	var alltickets models.AllTickets
 	err2 := json.Unmarshal(tickets, &alltickets)
@@ -104,7 +133,7 @@ func (server *Server) ScanTicket(w http.ResponseWriter, req *http.Request) {
 		utils.ResponseJSON(w, http.StatusNotFound, "No se encontró ticket", ticketInfo, errObj)
 	} else {
 		errObj.NoError()
-		utils.ResponseJSON(w, http.StatusOK, "Ticket encontrado", ticketInfo, errObj)
+		utils.ResponseJSON(w, http.StatusOK, "Ticket encontrado", fsb, errObj)
 	}
 }
 

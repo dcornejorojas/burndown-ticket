@@ -13,6 +13,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//Login used to login the user in the API, creates the token and retrieve the info if the login is correct.
 func (server *Server) Login(w http.ResponseWriter, r *http.Request) {
 	//var data []string
 	body, err := ioutil.ReadAll(r.Body)
@@ -45,6 +46,7 @@ func (server *Server) Login(w http.ResponseWriter, r *http.Request) {
 	utils.ResponseJSON(w, http.StatusOK, "Login correcto", user, err2)
 }
 
+//Logout used to logout the user by the given id. Delete the token.
 func (server *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	//var data []string
 	body, err := ioutil.ReadAll(r.Body)
@@ -64,8 +66,8 @@ func (server *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	utils.ResponseJSON(w, http.StatusOK, "Login correcto", user, err2)
 }
 
+/*SignIn used to search the user by his user and password in the DB*/
 func (server *Server) SignIn(username, password string) (string, error) {
-	fmt.Println("SignIn")
 	var err error
 
 	user := models.User{}

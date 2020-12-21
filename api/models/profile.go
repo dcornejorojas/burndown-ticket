@@ -12,17 +12,19 @@ import (
 
 //Profile that would use the app
 type Profile struct {
-	IDProfile int    `gorm:"size:100;not null" json:"idProfile"`
-	Name      string `gorm:"size:100;not null" json:"name"`
-	LastName  string `gorm:"size:100;not null" json:"lastName"`
-	Avatar    string `gorm:"size:100;not null" json:"avatar"`
-	Type      string `gorm:"size:100;not null" json:"type"`
+	IDProfile int       `gorm:"size:100;not null" json:"idProfile"`
+	Name      string    `gorm:"size:100;not null" json:"name"`
+	LastName  string    `gorm:"size:100;not null" json:"lastName"`
+	Avatar    string    `gorm:"size:100;not null" json:"avatar"`
+	Type      string    `gorm:"size:100;not null" json:"type"`
+	UpdatedAt time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 	Time      time.Time
 }
 
 //AllProfile list of profiles
 type AllProfile []Profile
 
+//Prepare used to init a profile object
 func (p *Profile) Prepare() {
 	p.IDProfile = 0
 	p.Name = html.EscapeString(strings.TrimSpace(p.Name))
@@ -85,4 +87,28 @@ func (p *Profile) FindProfileByID(db *gorm.DB, uid uint32) (*Profile, error) {
 		}
 	}
 	return p, err
+}
+
+func (p *Profile) UpdateProfile(db *gorm.DB, uid uint32) (*Profile, error) {
+
+	if os.Getenv("DB_ENABLE") == "true" {
+		db = db.Debug().Model(&Profile{}).Where("id = ?", uid).Take(&Profile{}).UpdateColumns(
+			map[string]interface{}{
+				"name":       p.Name,
+				"lastname":   p.LastName,
+				"avatar":     p.Avatar,
+				"type":       p.Type,
+				"updated_at": time.Now(),
+			},
+		)
+		if db.Error != nil {
+			return &Profile{}, db.Error
+		}
+		// This is the display the updated Profile
+		err := db.Debug().Model(&Profile{}).Where("id = ?", uid).Take(&p).Error
+		if err != nil {
+			return &Profile{}, err
+		}
+	}
+	return p, nil
 }

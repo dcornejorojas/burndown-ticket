@@ -64,9 +64,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	allUsers = append(allUsers, user)
 
 	utils.ResponseJSON(w, http.StatusCreated, "Usuario agregado exitosamente", allUsers, errObj)
-	// w.Header().Set("Content-Type", "application/json")
-	// w.WriteHeader(http.StatusCreated)
-	// json.NewEncoder(w).Encode(allUsers)
 
 }
 

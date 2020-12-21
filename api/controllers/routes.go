@@ -18,7 +18,7 @@ func (s *Server) InitRoutes() {
 	s.Router.HandleFunc("/profile/{idProfile}", middlewares.SetAuthMiddleware(s.DeleteProfile)).Methods("DELETE")
 
 	//Ticket Routes
-	s.Router.HandleFunc("/ticket/{id}", s.ScanTicket).Methods("GET")
+	s.Router.HandleFunc("/ticket/{folio}", s.ScanTicket).Methods("GET")
 	s.Router.HandleFunc("/ticket", s.BurnTicket).Methods("POST")
 
 	//User Routes
