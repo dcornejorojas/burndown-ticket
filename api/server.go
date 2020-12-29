@@ -42,7 +42,7 @@ func Run() {
 	if err != nil {
 		log.Fatalf("Error getting env, %v", err)
 	} else {
-		fmt.Println("We are getting the env values")
+		fmt.Println("\nWe are getting the env values")
 	}
 	port := os.Getenv("PORT")
 	if port == "" {

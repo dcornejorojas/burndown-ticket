@@ -13,8 +13,9 @@ import (
 
 //Profile that would use the app
 type Profile struct {
-	ID			uint32 `gorm:"primary key"`
-	IDprofile int       `gorm:"size:100;not null" json:"idprofile"`
+	gorm.Model
+	ID			uint `gorm:"primary_key"`
+	IDprofile int       `gorm:"size:100;not null" json:"idProfile"`
 	Name      string    `gorm:"size:100;not null" json:"name"`
 	Lastname  string    `gorm:"size:100;not null" json:"lastName"`
 	Avatar    string    `gorm:"size:100;not null" json:"avatar"`

@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	_ "strconv"
 	"ticket/api/models"
 	"ticket/api/utils"
 
 	"github.com/gorilla/mux"
+	log "github.com/jeanphorn/log4go"
 )
 
 var tickets = []byte(`[
@@ -77,80 +79,190 @@ var tickets = []byte(`[
 }
 ]`)
 
+
+
 /*ScanTicket handle the scan of a ticket.
 - {folio}: id of the ticket, it will be able with EAN13-CODE128-DUN14 format
 */
-func (server *Server) ScanTicket(w http.ResponseWriter, req *http.Request) {
-
+func (server *Server) ScanTicket(w http.ResponseWriter, req *http.Request){
+	log.LOGGER("Routes").Info("GET - /ticket/ - Trying to retrieve the ticket")
+	errObj := models.Error{}
+	errObj.NoError()
 	store := utils.GetStore()
-	service := os.Getenv("GET_TICKET")
 	vars := mux.Vars(req)
 	folio := vars[`folio`]
-	if len(folio) > 12 {
-		err := errors.New("Folio demasiado largo")
-		utils.ERROR(w, http.StatusBadRequest, err)
-		return
-	}
-	url := fmt.Sprintf("%s%s%s%s%s", service, "/", store, "/", folio)
-	fmt.Println(url)
-
-	var ticketInfo models.Ticket
-	client := &http.Client{}
-	request, _ := http.NewRequest("GET", "http://golang.org", nil)
-	request.Header.Set("User-Agent", "Mozilla/5.0")
-	request.Header.Set("Content-Type", "application/json")
-	res, err := client.Do(request)
+	fmt.Println(store)
+	ticket := models.Ticket{}
+	ticketGotten, err := ticket.FindTicketByFolio(server.DB, folio)
 	if err != nil {
-		utils.ERROR(w, http.StatusNotFound, err)
+		log.LOGGER(`Error`).Info(err.Error())
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	fmt.Println(res.StatusCode)
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		utils.ERROR(w, http.StatusNotFound, err)
+	if utils.IsValidString(ticket.Ticket) {
+		var items []models.Item
+		b, _ := json.Marshal(ticket.Products)
+		fmt.Println("\n---------------------TYPES--------------------------")
+		fmt.Printf("%T --- %T\n", b, items)
+		fmt.Printf("\n%v",string(b))
+		fmt.Println("\n----------------------ITEMS-------------------------")
+		err = json.Unmarshal([]byte(b),&items)
+		fmt.Printf("\n%v",items)
+		utils.ResponseJSON(w, http.StatusOK, `Ticket de folio `+ folio +` encontrado`, ticketGotten, errObj)
 		return
-	}
-	fsb := string(body)
-	/* Logic to be deprecated */
-	var alltickets models.AllTickets
-	err2 := json.Unmarshal(tickets, &alltickets)
-	if err2 != nil {
-		fmt.Println(err2)
-	}
-
-	/* Ticket must be found firstly in CheckedTickets (Postgresql) */
-
-	/* Ticket must be found in ticket`s repository (Postgresql) */
-	for _, fticket := range alltickets {
-		if fticket.Ticket == vars["id"] {
-			ticketInfo = fticket
-		}
-	}
-	fmt.Println(ticketInfo)
-	errObj := models.Error{}
-	if !utils.IsValidString(ticketInfo.Ticket) {
-		errObj.HasError(true, http.StatusNotFound, `Ticket no encontrado`)
-		utils.ResponseJSON(w, http.StatusNotFound, "No se encontró ticket", ticketInfo, errObj)
 	} else {
-		errObj.NoError()
-		utils.ResponseJSON(w, http.StatusOK, "Ticket encontrado", fsb, errObj)
+		//client := &http.Client{}
+		// request.Header.Set("User-Agent", "Mozilla/5.0")
+		// request.Header.Set("Content-Type", "application/json")
+		//res, err := client.Do(request)
+		//url := `http://api.plos.org/search?q=title:DNA`
+		url := os.Getenv(`TC_TRANSACTION`) + folio + `/`+ os.Getenv(`USERID`)
+		resp, err := http.Get(url)
+		
+		if err != nil {
+			log.LOGGER("Error").Info(err.Error())
+			utils.ERROR(w, http.StatusNotFound, err)
+			return
+		}
+		defer resp.Body.Close()
+		
+		// var example models.Example
+		
+		// body, err := ioutil.ReadAll(resp.Body)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		// err = json.Unmarshal(body,&example)
+		// if err != nil {
+		// 	fmt.Println(err)
+		// }
+		
+		// fmt.Printf("%+v\n",string(body))
+		// fmt.Println(`-----------------------------------------------`)
+		// fmt.Printf("%+v\n",example.Response.Docs[0])
+
+		var tc models.TCTicket
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.LOGGER("Error").Info(err.Error())
+			utils.ERROR(w, http.StatusNotFound, err)
+			return
+		}
+		//err = json.Unmarshal(body,&tc)
+		
+		err = json.Unmarshal(body,&tc)
+		if err != nil {
+			log.LOGGER("Error").Info(err.Error())
+			utils.ERROR(w, http.StatusNotFound, err)
+			return
+		}
+		if !utils.IsValidTicket(tc.GetTransaction) {
+			ticket.Prepare()
+			ticket.TypeAlert.Prepare(tc)
+			utils.ResponseJSON(w, http.StatusOK, `Ticket con folio `+ folio +` no fue encontrado`, ticket, errObj)
+			return
+			
+		} else {
+			//alert := models.TypeAlert{}
+			log.LOGGER("Ticket").Info(`-----------------------------------------------`)
+			ticket.MapTicket(tc.GetTransaction[0], folio)
+			log.LOGGER("Ticket").Info(string(body))
+			log.LOGGER("Ticket").Info(ticket)
+			log.LOGGER("Ticket").Info(`-----------------------------------------------`)
+			items := []models.Item{}
+			b, _ := json.Marshal(ticket.Products)
+			fmt.Printf("%T --- %T\n", b, items)
+			log.LOGGER("Ticket").Info(b)
+			log.LOGGER("Ticket").Info(`-----------------------------------------------`)
+
+			// err = json.Unmarshal(b,&items)
+			// if err != nil {
+			// 	log.LOGGER("Error").Info(err.Error())
+			// 	errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to Unmarshal the items")
+			// 	utils.ERROR(w, http.StatusUnprocessableEntity, err)
+			// 	return
+			// }
+			log.LOGGER("Ticket").Info(`-----------------------------------------------`)
+			log.LOGGER("Ticket").Info(items)
+			newTicket, err := ticket.SaveTicket(server.DB)
+			if err != nil {
+				log.LOGGER("Error").Info(err.Error())
+				errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to create the ticket")
+				utils.ERROR(w, http.StatusUnprocessableEntity, err)
+				return
+			}
+			utils.ResponseJSON(w, http.StatusOK, `Ticket con folio `+ folio +` fue encontrado`, newTicket, errObj)
+			return
+			
+		}
+		
 	}
 }
+
 
 func (server *Server) BurnTicket(w http.ResponseWriter, req *http.Request) {
 	errObj := models.Error{}
 	errObj.NoError()
-	var burnedTicket models.CheckedTicket
-	reqBody, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		utils.ResponseJSON(w, http.StatusOK, "Error", "", errObj)
+	vars := mux.Vars(req)
+	folio := vars[`folio`]
+	if folio == `` {
+		err := errors.New(`Folio no encontrado`)
+		utils.ERROR(w, http.StatusBadRequest, err)
 		return
 	}
-	err = json.Unmarshal(reqBody, &burnedTicket)
+	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		fmt.Println(err)
-		utils.ResponseJSON(w, http.StatusOK, "Error", "", errObj)
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
 		return
 	}
-	utils.ResponseJSON(w, http.StatusOK, fmt.Sprint("Ticket Quemado: ", burnedTicket.Ticket), burnedTicket, errObj)
+	var ticket models.Ticket
+	//err = ticket.UnmarshalTicket(body)
+	var decoded map[string]interface{}
+	fmt.Printf("%T - %T", body, decoded)
+	err = json.Unmarshal(body,&decoded)
+	if err != nil {
+		utils.ERROR(w, http.StatusUnprocessableEntity, err)
+		return
+	}
+	// tokenID, err := auth.ExtractTokenID(r)
+	// if err != nil {
+	// 	responses.ERROR(w, http.StatusUnauthorized, errors.New("Unauthorized"))
+	// 	return
+	// }
+	// if tokenID != uint32(uid) {
+	// 	responses.ERROR(w, http.StatusUnauthorized, errors.New(http.StatusText(http.StatusUnauthorized)))
+	// 	return
+	// }
+
+	
+	// err = ticket.Validate("update")
+	// if err != nil {
+	// 	utils.ERROR(w, http.StatusUnprocessableEntity, err)
+	// 	return
+	// }
+	ticket.Prepare()
+	
+	updatedUser, err := ticket.UpdateTicket(server.DB, folio, decoded)
+	if err != nil {
+		utils.ERROR(w, http.StatusInternalServerError, err)
+		return
+	}
+	utils.ResponseJSON(w, http.StatusOK, fmt.Sprintf("Ticket Quemado: %v", updatedUser.Folio), updatedUser, errObj)
+
+
+	// errObj := models.Error{}
+	// errObj.NoError()
+	// var burnedTicket models.CheckedTicket
+	// reqBody, err := ioutil.ReadAll(req.Body)
+	// if err != nil {
+	// 	utils.ResponseJSON(w, http.StatusOK, "Error", "", errObj)
+	// 	return
+	// }
+	// err = json.Unmarshal(reqBody, &burnedTicket)
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	utils.ResponseJSON(w, http.StatusOK, "Error", "", errObj)
+	// 	return
+	// }
+	// utils.ResponseJSON(w, http.StatusOK, fmt.Sprint("Ticket Quemado: ", burnedTicket.Ticket), burnedTicket, errObj)
 }

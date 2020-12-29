@@ -18,7 +18,7 @@ type CheckedTicket struct {
 	DateTime         time.Time `gorm:"size:100;not null" json:"dateTime"`
 	InitTime         time.Time `gorm:"size:100;not null" json:"initTime"`
 	EndTime          time.Time `gorm:"size:100;not null" json:"endTime"`
-	Products         []Product `gorm:"size:100;not null" json:"products"`
-	ProductsNotFound []Product `gorm:"size:100;not null" json:"productsNotFound"`
+	Products         []Item `gorm:"size:100;not null" json:"products"`
+	ProductsNotFound []Item `gorm:"size:100;not null" json:"productsNotFound"`
 	CurrentTime      time.Time
 }

@@ -32,6 +32,7 @@ var HelloWorld = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//CreateUser create a user in the db
 func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 	log.LOGGER("Routes").Info("POST - /user/ - Trying to create new user")
 	var user models.User
@@ -63,7 +64,6 @@ func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println(user)
 	newUser, err := user.SaveUser(server.DB)
 	if err != nil {
 		errObj.HasError(true, http.StatusUnprocessableEntity, "Failed to create the user")
@@ -71,7 +71,6 @@ func (server *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Insert a Valid Task Data")
 		return
 	}
-	//allUsers = append(allUsers, user)
 
 	utils.ResponseJSON(w, http.StatusCreated, "Usuario agregado exitosamente", newUser, errObj)
 

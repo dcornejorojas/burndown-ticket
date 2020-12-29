@@ -24,6 +24,13 @@
         "category": "Error",	
         "pattern": "[%D %T] [%C] [%L] (%S) %M"	
     }
+    ,{
+        "enable": true,
+        "level": "DEBUG",
+        "filename":"./logs/ticket.log",
+        "category": "Ticket",	
+        "pattern": "[%D %T] [%C] [%L] (%S) %M"	
+    }
     ,{ 
         "enable": false,
         "level": "DEBUG",

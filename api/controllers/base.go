@@ -36,12 +36,13 @@ func (server *Server) Initialize(DbDriver, DbUser, DbPassword, DbPort, DbHost, D
 	}
 
 	server.Router = mux.NewRouter()
+	//server.DB.AutoMigrate(&models.User{},&models.Profile{},&models.Ticket{},&models.Item{})
 
 	server.InitRoutes()
 }
 
 //Run run the API
 func (server *Server) Run(addr string) {
-	fmt.Printf(`Server listening on %s`, addr)
+	fmt.Printf("\nServer listening on %s", addr)
 	log.Fatal(http.ListenAndServe(":"+addr, server.Router))
 }

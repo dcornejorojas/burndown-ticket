@@ -13,6 +13,7 @@ import (
 
 //User that would login the app
 type User struct {
+	gorm.Model
 	IDUser    uint32    `gorm:"primary_key;auto_increment" json:"iduser"`
 	Dni       string    `gorm:"size:100;not null" json:"dni"`
 	Password  string    `gorm:"size:100;not null" json:"password"`
